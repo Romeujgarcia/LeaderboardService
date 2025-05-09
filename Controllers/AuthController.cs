@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-namespace LeaderboardService;
 
-[ApiController]
+namespace LeaderboardService
+{
+    [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
@@ -14,16 +15,31 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        var user = await _authService.Register(registerDto.Username, registerDto.Password);
-        return CreatedAtAction(nameof(Login), new { id = user.Id }, user);
+        try
+        {
+            await _authService.Register(dto.Username, dto.Password);
+            return Ok("User registered successfully");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var token = await _authService.Login(loginDto.Username, loginDto.Password);
-        return Ok(new { Token = token });
+        try
+        {
+            var token = await _authService.Login(dto.Username, dto.Password);
+            return Ok(new { Token = token });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { Message = ex.Message });
+        }
     }
+}
 }
