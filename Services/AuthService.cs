@@ -31,13 +31,13 @@ public class AuthService
     public async Task<Usuario> Register(string username, string password)
     {
         if (await _redisDb.StringGetAsync($"user:{username}") != RedisValue.Null)
-    {
-        throw new Exception("User already exists");
-    }
+        {
+            throw new Exception("User already exists");
+        }
         //Console.WriteLine($"Senha que está sendo registrada: {password}");
         var passwordHash = HashPassword(password);
         var user = new Usuario { Username = username, PasswordHash = passwordHash };
-        
+
         // Armazenar o hash da senha no Redis
         await _redisDb.StringSetAsync($"user:{username}", passwordHash);
         return user;
@@ -80,19 +80,19 @@ public class AuthService
     }
 
     private string GenerateJwtToken(string username)
-{
-    var tokenHandler = new JwtSecurityTokenHandler();
-    var key = new SymmetricSecurityKey(_jwtSecretKey); // Use a chave secreta gerada
-
-    var tokenDescriptor = new SecurityTokenDescriptor
     {
-        Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }),
-        Expires = DateTime.UtcNow.AddHours(1), // Define a expiração do token
-        SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
-    };
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = new SymmetricSecurityKey(_jwtSecretKey); // Use a chave secreta gerada
 
-    var token = tokenHandler.CreateToken(tokenDescriptor);
-    return tokenHandler.WriteToken(token);
-}
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }),
+            Expires = DateTime.UtcNow.AddHours(1), // Define a expiração do token
+            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
 
 }
